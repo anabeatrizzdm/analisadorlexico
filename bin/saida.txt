@@ -1,0 +1,153 @@
+===========================================
+ Analisando arquivo: entrada.txt
+===========================================
+
+[Linha 1] Entrada: 1 + 2 - 3;
+  => Resultado: 0
+
+[Linha 2] Entrada: 2 + 2 + 3 - 4;
+  => Resultado: 3
+
+[Linha 3] Entrada: 5;
+  => Resultado: 5
+
+[Linha 4] Entrada: 1 + + 9;
+Syntax error at character 0 of input
+instead expected token classes are [ABREPAR, INTEIRO]
+Couldn't repair and continue parse at character 0 of input
+  => Erro de sintaxe: Can't recover from previous error(s)
+
+[Linha 5] Entrada: 3+7;8+9;
+  => Resultado: 10
+  => Resultado: 17
+
+[Linha 6] Entrada: 2 * 3 + 4;
+  => Resultado: 10
+
+[Linha 7] Entrada: 2 + 3 * 4;
+  => Resultado: 14
+
+[Linha 8] Entrada: 10 / 2 - 1;
+  => Resultado: 4
+
+[Linha 9] Entrada: 10 % 3;
+  => Resultado: 1
+
+[Linha 10] Entrada: 7 / 0;
+  => Erro semantico: divisao por zero!
+  => Resultado: 0
+
+[Linha 11] Entrada: 100 / 10 / 2;
+  => Resultado: 5
+
+[Linha 12] Entrada: 2 * 2 * 2 * 2;
+  => Resultado: 16
+
+[Linha 13] Entrada: 17 % 5 % 3;
+  => Resultado: 2
+
+[Linha 14] Entrada: 9 / 2;
+  => Resultado: 4
+
+[Linha 15] Entrada: 5 % 0;
+  => Erro semantico: mod por zero!
+  => Resultado: 0
+
+[Linha 16] Entrada: (2 + 3) * 4;
+  => Resultado: 20
+
+[Linha 17] Entrada: (1 + 2) * (3 + 4);
+  => Resultado: 21
+
+[Linha 18] Entrada: ((10 - 4) * 2) % 5;
+  => Resultado: 2
+
+[Linha 19] Entrada: (((1+1)+1)+1);
+  => Resultado: 4
+
+[Linha 20] Entrada: ((2+3)*(4+5));
+  => Resultado: 45
+
+[Linha 21] Entrada: (((((5)))));
+  => Resultado: 5
+
+[Linha 22] Entrada: (2+(3*(4-1)));
+  => Resultado: 11
+
+[Linha 23] Entrada: 2 + 3 * 4 - 5 / 5;
+  => Resultado: 13
+
+[Linha 24] Entrada: (2+3)*(4-1)/5;
+  => Resultado: 3
+
+[Linha 25] Entrada: 10 - 2 * 3 + 4 % 3;
+  => Resultado: 5
+
+[Linha 26] Entrada: 1000000 + 1;
+  => Resultado: 1000001
+
+[Linha 27] Entrada: 0;
+  => Resultado: 0
+
+[Linha 28] Entrada: 0 - 0;
+  => Resultado: 0
+
+[Linha 29] Entrada: 123456 * 2;
+  => Resultado: 246912
+
+[Linha 30] Entrada: 1   +   2   -   3;
+  => Resultado: 0
+
+[Linha 31] Entrada: 1+1;2+2;3+3;4+4;
+  => Resultado: 2
+  => Resultado: 4
+  => Resultado: 6
+  => Resultado: 8
+
+[Linha 32] Entrada: (10-10) / (5-5);
+  => Erro semantico: divisao por zero!
+  => Resultado: 0
+
+[Linha 33] Entrada: 100 / (5-5);
+  => Erro semantico: divisao por zero!
+  => Resultado: 0
+
+[Linha 34] Entrada: ;
+Syntax error at character 0 of input
+instead expected token classes are [ABREPAR, INTEIRO]
+Couldn't repair and continue parse at character 0 of input
+  => Erro de sintaxe: Can't recover from previous error(s)
+
+[Linha 35] Entrada: (1+2;
+Syntax error at character 0 of input
+instead expected token classes are [FECHAPAR]
+Couldn't repair and continue parse at character 0 of input
+  => Erro de sintaxe: Can't recover from previous error(s)
+
+[Linha 36] Entrada: 1+2);
+Syntax error at character 0 of input
+instead expected token classes are [MENOS]
+Couldn't repair and continue parse at character 0 of input
+  => Erro de sintaxe: Can't recover from previous error(s)
+
+[Linha 37] Entrada: * 5;
+Syntax error at character 0 of input
+instead expected token classes are [ABREPAR, INTEIRO]
+Couldn't repair and continue parse at character 0 of input
+  => Erro de sintaxe: Can't recover from previous error(s)
+
+[Linha 38] Entrada: 5 5;
+Syntax error at character 0 of input
+instead expected token classes are [MENOS, VEZES, DIVIDE, MOD]
+Couldn't repair and continue parse at character 0 of input
+  => Erro de sintaxe: Can't recover from previous error(s)
+
+[Linha 39] Entrada: ();
+Syntax error at character 0 of input
+instead expected token classes are [ABREPAR, INTEIRO]
+Couldn't repair and continue parse at character 0 of input
+  => Erro de sintaxe: Can't recover from previous error(s)
+
+===========================================
+ Fim da analise.
+===========================================

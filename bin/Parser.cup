@@ -1,0 +1,93 @@
+/* ============================================================
+ *  Parser.cup
+ *  Gramatica de uma calculadora de expressoes aritmeticas
+ *  Disciplina: Compiladores - Analise Sintatica (JFlex + JCup)
+ *
+ *  Suporta:
+ *     - Soma e subtracao            (+  -)
+ *     - Multiplicacao, divisao, mod (*  /  %)
+ *     - Parenteses                  ( )
+ *     - Lista de expressoes separadas por ";"
+ *
+ *  A gramatica foi escrita em 3 niveis (expr / term / factor)
+ *  para resolver a AMBIGUIDADE mostrada nos slides 29-33 e para
+ *  garantir a precedencia correta dos operadores SEM precisar
+ *  declarar %left / %right (Exercicio 2 e Exercicio 3).
+ * ============================================================ */
+
+import java_cup.runtime.*;
+
+/* ----------------- Terminais (tokens do Scanner) ----------------- */
+terminal              PTVIRG, MAIS, MENOS, VEZES, DIVIDE, MOD;
+terminal              ABREPAR, FECHAPAR;
+terminal Integer       INTEIRO;
+terminal String         IDENT;     /* reservado para uso futuro (ver Scanner.flex) */
+
+/* ----------------- Nao terminais ----------------- */
+non terminal            expr_list;
+non terminal            expr_ptv;
+non terminal Integer    expr;
+non terminal Integer    term;
+non terminal Integer    factor;
+
+/* ============================================================
+ *  expr_list : lista de expressoes, cada uma terminada por ";"
+ * ============================================================ */
+expr_list ::= expr_list expr_ptv
+            | expr_ptv
+            ;
+
+expr_ptv ::= expr:e PTVIRG
+             {:
+                System.out.println("  => Resultado: " + e);
+             :}
+           ;
+
+/* ============================================================
+ *  expr : soma e subtracao (menor precedencia)
+ * ============================================================ */
+expr ::= expr:e1 MAIS term:e2
+            {: RESULT = e1 + e2; :}
+       | expr:e1 MENOS term:e2
+            {: RESULT = e1 - e2; :}
+       | term:t
+            {: RESULT = t; :}
+       ;
+
+/* ============================================================
+ *  term : multiplicacao, divisao e modulo (precedencia maior
+ *         que soma/subtracao, menor que parenteses)
+ * ============================================================ */
+term ::= term:t1 VEZES factor:t2
+            {: RESULT = t1 * t2; :}
+       | term:t1 DIVIDE factor:t2
+            {:
+                if (t2 == 0) {
+                    System.out.println("  => Erro semantico: divisao por zero!");
+                    RESULT = 0;
+                } else {
+                    RESULT = t1 / t2;
+                }
+            :}
+       | term:t1 MOD factor:t2
+            {:
+                if (t2 == 0) {
+                    System.out.println("  => Erro semantico: mod por zero!");
+                    RESULT = 0;
+                } else {
+                    RESULT = t1 % t2;
+                }
+            :}
+       | factor:f
+            {: RESULT = f; :}
+       ;
+
+/* ============================================================
+ *  factor : numero inteiro ou expressao entre parenteses
+ *           (maior precedencia / forca a ordem de avaliacao)
+ * ============================================================ */
+factor ::= INTEIRO:i
+            {: RESULT = i; :}
+       | ABREPAR expr:e FECHAPAR
+            {: RESULT = e; :}
+       ;
