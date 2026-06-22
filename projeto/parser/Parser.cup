@@ -1,0 +1,234 @@
+/* ============================================================
+ *  Parser.cup
+ *  Gramatica integrada da linguagem (JFlex + JCup)
+ *
+ *  Reune toda a construcao feita ao longo dos roteiros:
+ *    - program / declaracao de variavel / designator (R2, R3)
+ *    - if e if/else                                   (R6, R7)
+ *    - while                                          (R8)
+ *    - registro e tratamento de erros com o simbolo
+ *      especial "error" e o metodo syntax_error()     (R9, R10)
+ * ============================================================ */
+
+import java_cup.runtime.*;
+import erros.ListaErros;
+
+/* ----------------- Codigo do parser ----------------- */
+parser code {:
+    /* Chamado automaticamente pelo proprio PARSER assim que
+     * encontra um erro de sintaxe. s.left = linha, s.right = coluna */
+    public void syntax_error(Symbol s) {
+        this.defineErro(s.left, s.right);
+    }
+
+    /* Acesso ao Scanner (Yylex) a partir do parser. O scanner da
+     * classe parser e do tipo java_cup.runtime.Scanner, por isso o
+     * casting para scanner.Scanner e obrigatorio. */
+    public void defineErro(int linha, int coluna, String texto) {
+        scanner.Scanner sc = (scanner.Scanner) this.getScanner();
+        sc.defineErro(linha, coluna, texto);
+    }
+
+    /* Usado pelo syntax_error() - so conhece o local */
+    public void defineErro(int linha, int coluna) {
+        scanner.Scanner sc = (scanner.Scanner) this.getScanner();
+        sc.defineErro(linha, coluna);
+    }
+
+    /* Usado para completar o texto dos erros adicionados pelo syntax_error() */
+    public void defineErro(String texto) {
+        scanner.Scanner sc = (scanner.Scanner) this.getScanner();
+        sc.defineErro(texto);
+    }
+
+    /* Silenciamos as mensagens padrao do CUP: todo o reporte de erros
+     * passa pela ListaErros (via syntax_error / defineErro). */
+    public void report_error(String message, Object info) { /* nada */ }
+
+    public void report_fatal_error(String message, Object info) throws Exception {
+        done_parsing();
+        throw new Exception(message);
+    }
+:};
+
+/* ----------------- Terminais (tokens do Scanner) ----------------- */
+terminal              PTVIRG, VIRG, PTO, MAIS, MENOS, MULT, DIV, MOD, IGUAL;
+terminal              ABREPAR, FECHAPAR, ABRECHAVE, FECHACHAVE, ABRE_COLCH, FECHA_COLCH;
+terminal              KW_PROGRAM, KW_IF, KW_ELSE, KW_WHILE;
+terminal              MAIOR, MENOR, MAIORIGUAL, MENORIGUAL, IGUALIGUAL, DIF;
+terminal String       IDENT;
+terminal Double       NUMBER;
+
+/* ----------------- Nao terminais ----------------- */
+non terminal          program;
+non terminal          statement_aux, statement;
+non terminal          type;
+non terminal          varDecl_aux, varDecl, varDecl_op;
+non terminal          if, else, while, condicao;
+non terminal String   op_Relacional;
+non terminal          expr_list, expr_ptv;
+non terminal Double   expr, term, factor, designator;
+
+/* ============================================================
+ *  program : estrutura geral do programa
+ *  program p  <declaracoes>  {  <statements>  }
+ * ============================================================ */
+program ::= KW_PROGRAM IDENT varDecl_aux ABRECHAVE statement_aux FECHACHAVE ;
+
+/* ============================================================
+ *  statement_aux : sequencia de comandos dentro do programa
+ * ============================================================ */
+statement_aux ::= statement_aux statement
+                | statement
+                ;
+
+statement ::= expr_ptv
+            | designator IGUAL expr:e PTVIRG
+                {: System.out.println("Atribuicao reconhecida: " + e); :}
+            | if
+            | while
+            ;
+
+/* ============================================================
+ *  type : tipo de uma variavel (com ou sem [] de vetor)
+ * ============================================================ */
+type ::= IDENT ABRE_COLCH FECHA_COLCH
+       | IDENT
+       ;
+
+/* ============================================================
+ *  varDecl_aux : zero ou mais declaracoes de variavel
+ * ============================================================ */
+varDecl_aux ::= varDecl varDecl_aux
+              | /* vazio */
+              ;
+
+varDecl ::= type IDENT:id
+                {: System.out.print("Declaracao variavel:" + id); :}
+            varDecl_op PTVIRG
+                {: System.out.println(""); :}
+          ;
+
+varDecl_op ::= varDecl_op VIRG IDENT:id
+                  {: System.out.print(", " + id); :}
+             | /* vazio */
+             ;
+
+/* ============================================================
+ *  while : repeticao (simulada uma unica vez)
+ * ============================================================ */
+while ::= KW_WHILE
+              {: System.out.print("while("); :}
+          ABREPAR condicao FECHAPAR ABRECHAVE
+              {: System.out.println("){"); :}
+          expr_list FECHACHAVE
+              {: System.out.println("}"); :}
+        ;
+
+/* ============================================================
+ *  if / else
+ * ============================================================ */
+if ::= KW_IF
+           {: System.out.print("if("); :}
+       ABREPAR condicao FECHAPAR ABRECHAVE
+           {: System.out.println("){"); :}
+       expr_list FECHACHAVE
+           {: System.out.println("}"); :}
+       else
+     | KW_IF error
+           {: parser.defineErro("IF incompleto"); :}
+     ;
+
+else ::= {: System.out.println("else{"); :}
+         KW_ELSE ABRECHAVE expr_list FECHACHAVE
+             {: System.out.println("}"); :}
+       | /* vazio */
+       ;
+
+/* ============================================================
+ *  condicao : compara duas expressoes com um operador relacional
+ *  imprime "true" ou "false" (sem quebra de linha)
+ * ============================================================ */
+condicao ::= expr:e1 op_Relacional:op expr:e2
+             {: boolean resultado = false;
+                switch (op) {
+                    case "<":  resultado = (e1 <  e2); break;
+                    case "<=": resultado = (e1 <= e2); break;
+                    case ">":  resultado = (e1 >  e2); break;
+                    case ">=": resultado = (e1 >= e2); break;
+                    case "==": resultado = (e1.doubleValue() == e2.doubleValue()); break;
+                    case "!=": resultado = (e1.doubleValue() != e2.doubleValue()); break;
+                    default:   System.out.println("Simbolo desconhecido");
+                }
+                System.out.print(resultado);
+             :}
+           ;
+
+op_Relacional ::= MAIOR        {: RESULT = ">";  :}
+                | MENOR        {: RESULT = "<";  :}
+                | MAIORIGUAL   {: RESULT = ">="; :}
+                | MENORIGUAL   {: RESULT = "<="; :}
+                | IGUALIGUAL   {: RESULT = "=="; :}
+                | DIF          {: RESULT = "!="; :}
+                | error        {: parser.defineErro("Operador relacional desconhecido");
+                                  RESULT = "?"; :}
+                ;
+
+/* ============================================================
+ *  expr_list : lista de expressoes terminadas por ";"
+ * ============================================================ */
+expr_list ::= expr_list expr_ptv
+            | expr_ptv
+            ;
+
+expr_ptv ::= expr:e PTVIRG
+                {: System.out.println("= " + e); :}
+           | error
+                {: parser.defineErro("Expressao incompleta"); :}
+           ;
+
+/* ============================================================
+ *  expr / term / factor : expressoes aritmeticas com precedencia
+ * ============================================================ */
+expr ::= expr:e MAIS term:t   {: RESULT = e + t; :}
+       | expr:e MENOS term:t  {: RESULT = e - t; :}
+       | MENOS term:t         {: RESULT = -t; :}
+       | term:t               {: RESULT = t; :}
+       ;
+
+term ::= factor:f MULT term:t {: RESULT = f * t; :}
+       | factor:f DIV term:t
+            {: if (t == 0) {
+                   parser.defineErro(tleft, tright, "Erro semantico - Divisao por zero.");
+                   RESULT = 0.0;
+               } else {
+                   RESULT = f / t;
+               }
+            :}
+       | factor:f MOD term:t
+            {: if (t == 0) {
+                   parser.defineErro(tleft, tright, "Erro semantico - Mod por zero.");
+                   RESULT = 0.0;
+               } else {
+                   RESULT = f % t;
+               }
+            :}
+       | factor:f             {: RESULT = f; :}
+       ;
+
+factor ::= NUMBER:n                     {: RESULT = n; :}
+         | ABREPAR expr:e FECHAPAR      {: RESULT = e; :}
+         | designator:d                 {: RESULT = d; :}
+         ;
+
+/* ============================================================
+ *  designator : referencia a uma variavel / vetor / campo
+ *  (valor sempre 1.0, conforme os roteiros)
+ * ============================================================ */
+designator ::= designator ABRE_COLCH expr FECHA_COLCH
+                  {: RESULT = Double.valueOf(1.0); :}
+             | designator PTO IDENT
+                  {: RESULT = Double.valueOf(1.0); :}
+             | IDENT
+                  {: RESULT = Double.valueOf(1.0); :}
+             ;

@@ -1,0 +1,5 @@
+program p
+  int a;
+{
+  if a + 1;
+}

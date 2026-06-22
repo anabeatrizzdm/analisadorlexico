@@ -1,0 +1,7 @@
+program p
+  int a;
+{
+  if(1 + 2){
+    5;
+  }
+}
